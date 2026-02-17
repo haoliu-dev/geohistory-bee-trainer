@@ -164,6 +164,38 @@ export const saveInferenceOverride = (override: InferenceRoutingOverride): void 
   window.localStorage.setItem(OVERRIDE_KEY, JSON.stringify(override));
 };
 
+const PROVIDER_CONFIG_KEY = 'geohistory_provider_config_v1';
+
+export const getAllProviderConfigs = (): Record<string, Record<string, string> | null> => {
+  if (typeof window === 'undefined') return {};
+  const raw = window.localStorage.getItem(PROVIDER_CONFIG_KEY);
+  if (!raw) return {};
+
+  try {
+    return JSON.parse(raw) as Record<string, Record<string, string> | null>;
+  } catch {
+    window.localStorage.removeItem(PROVIDER_CONFIG_KEY);
+    return {};
+  }
+};
+
+export const getProviderConfig = (provider: string): Record<string, string> | null => {
+  const all = getAllProviderConfigs();
+  return all[provider] ?? null;
+};
+
+export const saveProviderConfig = (provider: string, config: Record<string, string>): void => {
+  if (typeof window === 'undefined') return;
+  const all = getAllProviderConfigs();
+  all[provider] = config;
+  window.localStorage.setItem(PROVIDER_CONFIG_KEY, JSON.stringify(all));
+};
+
+export const clearProviderConfigs = (): void => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(PROVIDER_CONFIG_KEY);
+};
+
 export const getEffectiveInferenceRouting = (): InferenceRoutingOverride => {
   const config = getResolvedAppConfig();
   const override = getInferenceOverride();
