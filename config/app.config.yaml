@@ -1,0 +1,34 @@
+version: 1
+
+inference:
+  providers:
+    gemini:
+      apiKeyEnv: GEMINI_API_KEY
+      models:
+        light: gemini-3-flash-preview
+        normal: gemini-3-flash-preview
+    local_openai_compatible:
+      baseURL: http://127.0.0.1:8841
+      apiKeyEnv: LOCAL_OPENAI_API_KEY
+      models:
+        light: claude-haiku-4-5-20251001
+        normal: claude-sonnet-4-5-20250929
+    lmstudio:
+      baseURL: http://127.0.0.1:1234
+      apiKeyEnv: NONE
+      models:
+        light: qwen/qwen3-vl-8b
+        normal: qwen/qwen3-vl-8b
+  routing:
+    light:
+      provider: gemini
+      model: gemini-3-flash-preview
+    normal:
+      provider: gemini
+      model: gemini-3-flash-preview
+
+gameplayDefaults:
+  category: History
+  difficulty: HIGH_SCHOOL
+  questionCount: 10
+  scope: "*"
