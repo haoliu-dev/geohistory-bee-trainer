@@ -52,6 +52,10 @@ export const InferenceConfigModal: React.FC<InferenceConfigModalProps> = ({
     (p) => providerSecrets[p]?.apiKey && providerSecrets[p].apiKey.length > 0
   );
 
+  const enabledProviders = providers.filter(
+    (p) => providerSecrets[p]?.apiKey && providerSecrets[p].apiKey.length > 0
+  ) as InferenceProviderKind[];
+
   const handleSaveProviderConfig = async () => {
     const config = providerSecrets[activeProviderTab];
     if (!config) return;
@@ -180,43 +184,45 @@ export const InferenceConfigModal: React.FC<InferenceConfigModalProps> = ({
             <div
               key={level}
               className={`rounded-xl border p-3 ${
-                !hasApiKey ? 'opacity-50 pointer-events-none border-slate-100' : 'border-slate-200'
+                enabledProviders.length === 0 ? 'opacity-50 pointer-events-none border-slate-100' : 'border-slate-200'
               }`}
             >
               <h4 className="text-sm font-semibold text-slate-700 mb-3">{SECTION_LABEL[level]}</h4>
 
-              <label className="block text-xs font-medium text-slate-600 mb-1">Provider</label>
-              <select
-                value={value[level].provider}
-                onChange={(e) => {
-                  onProviderChange(level, e.target.value as InferenceProviderKind);
-                }}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
-                disabled={!hasApiKey}
-              >
-                {providers.map((provider) => (
-                  <option key={provider} value={provider}>
-                    {provider}
-                  </option>
-                ))}
-              </select>
+              {enabledProviders.length === 0 ? (
+                <p className="text-xs text-slate-500">Configure a provider above to enable</p>
+              ) : (
+                <>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Provider</label>
+                  <select
+                    value={value[level].provider}
+                    onChange={(e) => {
+                      onProviderChange(level, e.target.value as InferenceProviderKind);
+                    }}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
+                  >
+                    {enabledProviders.map((provider) => (
+                      <option key={provider} value={provider}>
+                        {provider}
+                      </option>
+                    ))}
+                  </select>
 
-              <label className="block text-xs font-medium text-slate-600 mt-3 mb-1">Model</label>
-              <select
-                value={value[level].model}
-                onChange={(e) => onModelChange(level, e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
-                disabled={modelLoading[level] || !hasApiKey}
-              >
-                {modelOptions[level].map((model) => (
-                  <option key={model} value={model}>
-                    {model}
-                  </option>
-                ))}
-              </select>
-              {modelLoading[level] && <p className="mt-1 text-xs text-slate-500">Loading models...</p>}
-              {!hasApiKey && level === 'light' && (
-                <p className="text-xs text-amber-600 mt-2">Add API key above to enable</p>
+                  <label className="block text-xs font-medium text-slate-600 mt-3 mb-1">Model</label>
+                  <select
+                    value={value[level].model}
+                    onChange={(e) => onModelChange(level, e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
+                    disabled={modelLoading[level]}
+                  >
+                    {modelOptions[level].map((model) => (
+                      <option key={model} value={model}>
+                        {model}
+                      </option>
+                    ))}
+                  </select>
+                  {modelLoading[level] && <p className="mt-1 text-xs text-slate-500">Loading models...</p>}
+                </>
               )}
             </div>
           ))}
