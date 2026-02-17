@@ -65,6 +65,14 @@ export const getResolvedAppConfig = (): AppConfig => {
         normal: 'qwen/qwen3-vl-8b',
       },
     },
+    anthropics: {
+      baseURL: 'https://api.anthropic.com',
+      apiKeyEnv: 'ANTHROPIC_API_KEY',
+      models: {
+        light: 'claude-3-haiku-20240307',
+        normal: 'claude-3-5-sonnet-20241022',
+      },
+    },
   } satisfies Record<InferenceProviderKind, AppInferenceProviderConfig>;
 
   const providers = {
@@ -90,6 +98,14 @@ export const getResolvedAppConfig = (): AppConfig => {
       models: {
         ...defaults.lmstudio.models,
         ...(parsed.inference?.providers?.lmstudio?.models ?? {}),
+      },
+    },
+    anthropics: {
+      ...defaults.anthropics,
+      ...(parsed.inference?.providers?.anthropics ?? {}),
+      models: {
+        ...defaults.anthropics.models,
+        ...(parsed.inference?.providers?.anthropics?.models ?? {}),
       },
     },
   } satisfies Record<InferenceProviderKind, AppInferenceProviderConfig>;

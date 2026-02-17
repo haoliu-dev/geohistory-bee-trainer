@@ -1,5 +1,5 @@
 export type InferencePower = 'light' | 'normal';
-export type InferenceProviderKind = 'gemini' | 'local_openai_compatible' | 'lmstudio';
+export type InferenceProviderKind = 'gemini' | 'local_openai_compatible' | 'lmstudio' | 'anthropics';
 
 export interface InferenceRequestBase {
   prompt: string;

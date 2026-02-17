@@ -1,6 +1,7 @@
 import { getEffectiveInferenceRouting, getResolvedAppConfig, getProviderConfig } from '../config/appConfig';
 import { createGeminiProvider } from './geminiProvider';
 import { createLocalOpenAICompatibleProvider } from './localOpenAICompatibleProvider';
+import { createAnthropicsProvider } from './anthropicsProvider';
 import { InferenceProvider } from './provider';
 import { InferenceJsonRequest, InferenceProviderKind, InferenceTextRequest } from './types';
 
@@ -22,6 +23,16 @@ const createProviders = (): Record<InferenceProviderKind, InferenceProvider> => 
     return local?.baseURL || config.inference.providers[provider].baseURL || (provider === 'local_openai_compatible' ? 'http://127.0.0.1:8841' : 'http://127.0.0.1:1234');
   };
 
+  const getAnthropicsApiKey = (): string | undefined => {
+    const local = getProviderConfig('anthropics');
+    return local?.apiKey || local?.token || config.inference.providers.anthropics.apiKey;
+  };
+
+  const getAnthropicsBaseURL = (): string => {
+    const local = getProviderConfig('anthropics');
+    return local?.baseURL || config.inference.providers.anthropics.baseURL || 'https://api.anthropic.com';
+  };
+
   return {
     gemini: createGeminiProvider({
       apiKey: getGeminiApiKey(),
@@ -33,6 +44,10 @@ const createProviders = (): Record<InferenceProviderKind, InferenceProvider> => 
     lmstudio: createLocalOpenAICompatibleProvider({
       baseURL: getLocalOpenAIBaseURL('lmstudio'),
       apiKey: getLocalOpenAIApiKey('lmstudio'),
+    }),
+    anthropics: createAnthropicsProvider({
+      baseURL: getAnthropicsBaseURL(),
+      apiKey: getAnthropicsApiKey() || '',
     }),
   };
 };

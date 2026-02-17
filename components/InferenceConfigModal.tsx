@@ -117,39 +117,78 @@ export const InferenceConfigModal: React.FC<InferenceConfigModalProps> = ({
             ))}
           </div>
           <div className="p-3 border border-slate-200 rounded-lg space-y-2">
-            <div>
-              <label className="block text-xs text-slate-600 mb-1">API Key</label>
-              <input
-                type="password"
-                value={providerSecrets[activeProviderTab]?.apiKey || ''}
-                onChange={(e) => {
-                  const current = providerSecrets[activeProviderTab] || {};
-                  setProviderSecrets({
-                    ...providerSecrets,
-                    [activeProviderTab]: { ...current, apiKey: e.target.value },
-                  });
-                }}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                placeholder="Enter API key"
-              />
-            </div>
-            {(activeProviderTab === 'local_openai_compatible' || activeProviderTab === 'lmstudio') && (
-              <div>
-                <label className="block text-xs text-slate-600 mb-1">Base URL</label>
-                <input
-                  type="text"
-                  value={providerSecrets[activeProviderTab]?.baseURL || ''}
-                  onChange={(e) => {
-                    const current = providerSecrets[activeProviderTab] || {};
-                    setProviderSecrets({
-                      ...providerSecrets,
-                      [activeProviderTab]: { ...current, baseURL: e.target.value },
-                    });
-                  }}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  placeholder="http://127.0.0.1:8841"
-                />
-              </div>
+            {activeProviderTab === 'anthropics' ? (
+              <>
+                <div>
+                  <label className="block text-xs text-slate-600 mb-1">Base URL</label>
+                  <input
+                    type="text"
+                    value={providerSecrets[activeProviderTab]?.baseURL || ''}
+                    onChange={(e) => {
+                      const current = providerSecrets[activeProviderTab] || {};
+                      setProviderSecrets({
+                        ...providerSecrets,
+                        [activeProviderTab]: { ...current, baseURL: e.target.value },
+                      });
+                    }}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="https://api.anthropic.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600 mb-1">API Token</label>
+                  <input
+                    type="password"
+                    value={providerSecrets[activeProviderTab]?.apiKey || providerSecrets[activeProviderTab]?.token || ''}
+                    onChange={(e) => {
+                      const current = providerSecrets[activeProviderTab] || {};
+                      setProviderSecrets({
+                        ...providerSecrets,
+                        [activeProviderTab]: { ...current, apiKey: e.target.value, token: e.target.value },
+                      });
+                    }}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="Enter API token"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-xs text-slate-600 mb-1">API Key</label>
+                  <input
+                    type="password"
+                    value={providerSecrets[activeProviderTab]?.apiKey || ''}
+                    onChange={(e) => {
+                      const current = providerSecrets[activeProviderTab] || {};
+                      setProviderSecrets({
+                        ...providerSecrets,
+                        [activeProviderTab]: { ...current, apiKey: e.target.value },
+                      });
+                    }}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="Enter API key"
+                  />
+                </div>
+                {(activeProviderTab === 'local_openai_compatible' || activeProviderTab === 'lmstudio') && (
+                  <div>
+                    <label className="block text-xs text-slate-600 mb-1">Base URL</label>
+                    <input
+                      type="text"
+                      value={providerSecrets[activeProviderTab]?.baseURL || ''}
+                      onChange={(e) => {
+                        const current = providerSecrets[activeProviderTab] || {};
+                        setProviderSecrets({
+                          ...providerSecrets,
+                          [activeProviderTab]: { ...current, baseURL: e.target.value },
+                        });
+                      }}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      placeholder="http://127.0.0.1:8841"
+                    />
+                  </div>
+                )}
+              </>
             )}
             <div className="flex gap-2">
               <Button
