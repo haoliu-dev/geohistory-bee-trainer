@@ -22,6 +22,7 @@ import {
   listProviderModels,
   getResolvedAppConfig,
   saveInferenceOverride,
+  getAllProviderConfigs,
 } from '../services/config/appConfig';
 import { InferenceConfigModal } from '../components/InferenceConfigModal';
 import { InferenceRoutingOverride } from '../services/config/types';
@@ -63,6 +64,14 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, isLoading, in
     setScope(initialConfig.scope);
     setDifficulty(initialConfig.difficulty);
   }, [initialConfig]);
+
+  useEffect(() => {
+    const providers = getAllProviderConfigs();
+    const hasAnyKey = Object.values(providers).some((p) => p && p.apiKey && p.apiKey.length > 0);
+    if (!hasAnyKey) {
+      setConfigOpen(true);
+    }
+  }, []);
 
   const providers = useMemo(
     () => Object.keys(getResolvedAppConfig().inference.providers) as InferenceProviderKind[],

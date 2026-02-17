@@ -1,4 +1,4 @@
-import { getEffectiveInferenceRouting, getResolvedAppConfig } from '../config/appConfig';
+import { getEffectiveInferenceRouting, getResolvedAppConfig, getProviderConfig } from '../config/appConfig';
 import { createGeminiProvider } from './geminiProvider';
 import { createLocalOpenAICompatibleProvider } from './localOpenAICompatibleProvider';
 import { InferenceProvider } from './provider';
@@ -6,17 +6,33 @@ import { InferenceJsonRequest, InferenceProviderKind, InferenceTextRequest } fro
 
 const createProviders = (): Record<InferenceProviderKind, InferenceProvider> => {
   const config = getResolvedAppConfig();
+
+  const getGeminiApiKey = (): string | undefined => {
+    const local = getProviderConfig('gemini');
+    return local?.apiKey || config.inference.providers.gemini.apiKey;
+  };
+
+  const getLocalOpenAIApiKey = (provider: 'local_openai_compatible' | 'lmstudio'): string | undefined => {
+    const local = getProviderConfig(provider);
+    return local?.apiKey || config.inference.providers[provider].apiKey;
+  };
+
+  const getLocalOpenAIBaseURL = (provider: 'local_openai_compatible' | 'lmstudio'): string => {
+    const local = getProviderConfig(provider);
+    return local?.baseURL || config.inference.providers[provider].baseURL || (provider === 'local_openai_compatible' ? 'http://127.0.0.1:8841' : 'http://127.0.0.1:1234');
+  };
+
   return {
     gemini: createGeminiProvider({
-      apiKey: config.inference.providers.gemini.apiKey,
+      apiKey: getGeminiApiKey(),
     }),
     local_openai_compatible: createLocalOpenAICompatibleProvider({
-      baseURL: config.inference.providers.local_openai_compatible.baseURL || 'http://127.0.0.1:8841',
-      apiKey: config.inference.providers.local_openai_compatible.apiKey,
+      baseURL: getLocalOpenAIBaseURL('local_openai_compatible'),
+      apiKey: getLocalOpenAIApiKey('local_openai_compatible'),
     }),
     lmstudio: createLocalOpenAICompatibleProvider({
-      baseURL: config.inference.providers.lmstudio.baseURL || 'http://127.0.0.1:1234',
-      apiKey: config.inference.providers.lmstudio.apiKey,
+      baseURL: getLocalOpenAIBaseURL('lmstudio'),
+      apiKey: getLocalOpenAIApiKey('lmstudio'),
     }),
   };
 };
