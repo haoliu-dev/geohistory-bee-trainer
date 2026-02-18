@@ -269,9 +269,34 @@ const listGeminiModels = async (apiKey?: string): Promise<string[]> => {
     .filter(Boolean);
 };
 
+const listAnthropicsModels = async (baseURL: string, apiKey?: string): Promise<string[]> => {
+  if (!apiKey) {
+    return [];
+  }
+
+  try {
+    const response = await fetch(`${baseURL.replace(/\/+$/, '')}/v1/models`, {
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+    });
+    if (!response.ok) {
+      return [];
+    }
+    const payload = (await response.json()) as { data?: Array<{ id?: string }> };
+    return (payload.data ?? [])
+      .map((item) => item.id?.trim() ?? '')
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+};
+
 interface ProviderModelDiscoveryDeps {
   fetchOpenAICompatibleModels?: (baseURL: string) => Promise<string[]>;
   listGeminiModels?: (apiKey?: string) => Promise<string[]>;
+  listAnthropicsModels?: (baseURL: string, apiKey?: string) => Promise<string[]>;
 }
 
 export const listProviderModels = async (
@@ -284,9 +309,24 @@ export const listProviderModels = async (
 
   if (provider === 'gemini') {
     try {
+      const localConfig = getProviderConfig('gemini');
+      const apiKey = localConfig?.apiKey || providerConfig.apiKey;
       const remoteModels = uniqueModels(
-        (await (deps?.listGeminiModels ?? listGeminiModels)(providerConfig.apiKey)).map(normalizeGeminiModelName)
+        (await (deps?.listGeminiModels ?? listGeminiModels)(apiKey)).map(normalizeGeminiModelName)
       );
+      const merged = uniqueModels([...remoteModels, ...fallback]);
+      return merged.length > 0 ? merged : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  if (provider === 'anthropics') {
+    try {
+      const localConfig = getProviderConfig('anthropics');
+      const baseURL = localConfig?.baseURL || providerConfig.baseURL || 'https://api.anthropic.com';
+      const apiKey = localConfig?.apiKey || localConfig?.token || providerConfig.apiKey;
+      const remoteModels = await (deps?.listAnthropicsModels ?? listAnthropicsModels)(baseURL, apiKey);
       const merged = uniqueModels([...remoteModels, ...fallback]);
       return merged.length > 0 ? merged : fallback;
     } catch {
@@ -299,7 +339,9 @@ export const listProviderModels = async (
   }
 
   try {
-    const remoteModels = await (deps?.fetchOpenAICompatibleModels ?? fetchOpenAICompatibleModels)(providerConfig.baseURL);
+    const localConfig = getProviderConfig(provider);
+    const baseURL = localConfig?.baseURL || providerConfig.baseURL;
+    const remoteModels = await (deps?.fetchOpenAICompatibleModels ?? fetchOpenAICompatibleModels)(baseURL);
     const merged = uniqueModels([...remoteModels, ...fallback]);
     return merged.length > 0 ? merged : fallback;
   } catch {
