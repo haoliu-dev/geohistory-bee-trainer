@@ -248,18 +248,29 @@ export const InferenceConfigModal: React.FC<InferenceConfigModalProps> = ({
                   </select>
 
                   <label className="block text-xs font-medium text-slate-600 mt-3 mb-1">Model</label>
-                  <select
-                    value={value[level].model}
-                    onChange={(e) => onModelChange(level, e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800"
-                    disabled={modelLoading[level]}
-                  >
-                    {modelOptions[level].map((model) => (
-                      <option key={model} value={model}>
-                        {model}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={modelOptions[level].includes(value[level].model) ? value[level].model : ''}
+                      onChange={(e) => onModelChange(level, e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 pr-16"
+                      disabled={modelLoading[level]}
+                    >
+                      {modelOptions[level].map((model) => (
+                        <option key={model} value={model}>
+                          {model}
+                        </option>
+                      ))}
+                      <option value="">-- Custom --</option>
+                    </select>
+                    <input
+                      type="text"
+                      value={value[level].model}
+                      onChange={(e) => onModelChange(level, e.target.value)}
+                      placeholder="Type custom model name"
+                      className="absolute right-1 top-1 bottom-1 w-24 bg-transparent border-0 text-xs text-slate-600 focus:outline-none focus:ring-0"
+                      disabled={modelLoading[level]}
+                    />
+                  </div>
                   {modelLoading[level] && <p className="mt-1 text-xs text-slate-500">Loading models...</p>}
                 </>
               )}
