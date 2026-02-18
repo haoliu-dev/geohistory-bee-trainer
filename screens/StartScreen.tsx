@@ -377,6 +377,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, isLoading, in
         }}
         onSave={() => {
           saveInferenceOverride(inferenceDraft);
+          setConfigOpen(false);
         }}
         onClose={() => setConfigOpen(false)}
       />
