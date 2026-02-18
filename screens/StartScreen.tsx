@@ -78,15 +78,15 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, isLoading, in
     []
   );
 
-  const loadModelsForLevel = async (level: 'light' | 'normal', provider: InferenceProviderKind) => {
+  const loadModelsForLevel = async (level: 'light' | 'normal', provider: InferenceProviderKind, currentModel?: string) => {
     setModelLoading((prev) => ({ ...prev, [level]: true }));
     const models = await listProviderModels(provider);
-    const nextModels = models.length > 0 ? models : [inferenceDraft[level].model];
+    const targetModel = currentModel || inferenceDraft[level].model;
+    const nextModels = models.length > 0 ? models : [targetModel];
 
     setModelOptions((prev) => ({ ...prev, [level]: nextModels }));
     setInferenceDraft((prev) => {
-      const currentModel = prev[level].model;
-      const model = nextModels.includes(currentModel) ? currentModel : nextModels[0];
+      const model = nextModels.includes(targetModel) ? targetModel : nextModels[0];
       return {
         ...prev,
         [level]: {
@@ -101,8 +101,14 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, isLoading, in
 
   useEffect(() => {
     if (!configOpen) return;
-    void loadModelsForLevel('light', inferenceDraft.light.provider);
-    void loadModelsForLevel('normal', inferenceDraft.normal.provider);
+    const savedRouting = getEffectiveInferenceRouting();
+    setInferenceDraft(savedRouting);
+    setModelOptions({
+      light: [savedRouting.light.model],
+      normal: [savedRouting.normal.model],
+    });
+    void loadModelsForLevel('light', savedRouting.light.provider, savedRouting.light.model);
+    void loadModelsForLevel('normal', savedRouting.normal.provider, savedRouting.normal.model);
     // intentionally run once when opening
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configOpen]);
