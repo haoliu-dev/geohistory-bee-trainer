@@ -14,7 +14,7 @@ const getSecret = (key: string): string | undefined => {
 };
 
 const isProviderKind = (value: string): value is InferenceProviderKind => {
-  return value === 'gemini' || value === 'local_openai_compatible' || value === 'lmstudio';
+  return value === 'gemini' || value === 'local_openai_compatible' || value === 'lmstudio' || value === 'anthropics';
 };
 
 const sanitizeRoute = (
