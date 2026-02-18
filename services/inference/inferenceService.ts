@@ -5,60 +5,48 @@ import { createAnthropicsProvider } from './anthropicsProvider';
 import { InferenceProvider } from './provider';
 import { InferenceJsonRequest, InferenceProviderKind, InferenceTextRequest } from './types';
 
-const createProviders = (): Record<InferenceProviderKind, InferenceProvider> => {
+const createProvider = (provider: InferenceProviderKind): InferenceProvider => {
   const config = getResolvedAppConfig();
+  const providerConfig = config.inference.providers[provider];
 
-  const getGeminiApiKey = (): string | undefined => {
-    const local = getProviderConfig('gemini');
-    return local?.apiKey || config.inference.providers.gemini.apiKey;
-  };
-
-  const getLocalOpenAIApiKey = (provider: 'local_openai_compatible' | 'lmstudio'): string | undefined => {
-    const local = getProviderConfig(provider);
-    return local?.apiKey || config.inference.providers[provider].apiKey;
-  };
-
-  const getLocalOpenAIBaseURL = (provider: 'local_openai_compatible' | 'lmstudio'): string => {
-    const local = getProviderConfig(provider);
-    return local?.baseURL || config.inference.providers[provider].baseURL || (provider === 'local_openai_compatible' ? 'http://127.0.0.1:8841' : 'http://127.0.0.1:1234');
-  };
-
-  const getAnthropicsApiKey = (): string | undefined => {
-    const local = getProviderConfig('anthropics');
-    return local?.apiKey || local?.token || config.inference.providers.anthropics.apiKey;
-  };
-
-  const getAnthropicsBaseURL = (): string => {
-    const local = getProviderConfig('anthropics');
-    return local?.baseURL || config.inference.providers.anthropics.baseURL || 'https://api.anthropic.com';
-  };
-
-  return {
-    gemini: createGeminiProvider({
-      apiKey: getGeminiApiKey(),
-    }),
-    local_openai_compatible: createLocalOpenAICompatibleProvider({
-      baseURL: getLocalOpenAIBaseURL('local_openai_compatible'),
-      apiKey: getLocalOpenAIApiKey('local_openai_compatible'),
-    }),
-    lmstudio: createLocalOpenAICompatibleProvider({
-      baseURL: getLocalOpenAIBaseURL('lmstudio'),
-      apiKey: getLocalOpenAIApiKey('lmstudio'),
-    }),
-    anthropics: createAnthropicsProvider({
-      baseURL: getAnthropicsBaseURL(),
-      apiKey: getAnthropicsApiKey() || '',
-    }),
-  };
+  switch (provider) {
+    case 'gemini': {
+      const local = getProviderConfig('gemini');
+      const apiKey = local?.apiKey || providerConfig.apiKey;
+      return createGeminiProvider({ apiKey });
+    }
+    case 'local_openai_compatible': {
+      const local = getProviderConfig('local_openai_compatible');
+      const baseURL = local?.baseURL || providerConfig.baseURL || 'http://127.0.0.1:8841';
+      const apiKey = local?.apiKey || providerConfig.apiKey;
+      return createLocalOpenAICompatibleProvider({ baseURL, apiKey });
+    }
+    case 'lmstudio': {
+      const local = getProviderConfig('lmstudio');
+      const baseURL = local?.baseURL || providerConfig.baseURL || 'http://127.0.0.1:1234';
+      const apiKey = local?.apiKey || providerConfig.apiKey;
+      return createLocalOpenAICompatibleProvider({ baseURL, apiKey });
+    }
+    case 'anthropics': {
+      const local = getProviderConfig('anthropics');
+      const baseURL = local?.baseURL || providerConfig.baseURL || 'https://api.anthropic.com';
+      const apiKey = local?.apiKey || local?.token || providerConfig.apiKey || '';
+      return createAnthropicsProvider({ baseURL, apiKey });
+    }
+    default:
+      return createGeminiProvider({ apiKey: providerConfig?.apiKey });
+  }
 };
 
-const providers = createProviders();
+const getProvider = (provider: InferenceProviderKind): InferenceProvider => {
+  return createProvider(provider);
+};
 
 const resolveRequest = (request: InferenceTextRequest | InferenceJsonRequest) => {
   const power = request.power ?? 'normal';
   const routing = getEffectiveInferenceRouting();
   const target = routing[power];
-  const provider = providers[target.provider] ?? providers.gemini;
+  const provider = getProvider(target.provider);
 
   return {
     provider,
