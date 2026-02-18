@@ -16,6 +16,7 @@ interface InferenceConfigModalProps {
   modelLoading: Record<'light' | 'normal', boolean>;
   onProviderChange: (level: 'light' | 'normal', provider: InferenceProviderKind) => void;
   onModelChange: (level: 'light' | 'normal', model: string) => void;
+  onSave?: () => void;
   onClose: () => void;
 }
 
@@ -32,6 +33,7 @@ export const InferenceConfigModal: React.FC<InferenceConfigModalProps> = ({
   modelLoading,
   onProviderChange,
   onModelChange,
+  onSave,
   onClose,
 }) => {
   const [activeProviderTab, setActiveProviderTab] = useState<string>(providers[0] || 'gemini');
@@ -279,6 +281,11 @@ export const InferenceConfigModal: React.FC<InferenceConfigModalProps> = ({
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
+          {onSave && (
+            <Button type="button" onClick={onSave}>
+              Save
+            </Button>
+          )}
           <Button variant="secondary" type="button" onClick={onClose}>
             Close
           </Button>
