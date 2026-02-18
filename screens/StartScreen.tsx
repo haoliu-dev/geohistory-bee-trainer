@@ -82,7 +82,11 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, isLoading, in
     setModelLoading((prev) => ({ ...prev, [level]: true }));
     const models = await listProviderModels(provider);
     const targetModel = currentModel || inferenceDraft[level].model;
-    const nextModels = models.length > 0 ? models : [targetModel];
+    
+    let nextModels = models.length > 0 ? models : [targetModel];
+    if (targetModel && !nextModels.includes(targetModel)) {
+      nextModels = [targetModel, ...nextModels];
+    }
 
     setModelOptions((prev) => ({ ...prev, [level]: nextModels }));
     setInferenceDraft((prev) => {
